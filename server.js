@@ -9,9 +9,9 @@ const PORT = 3000;
 
 // Configuración de CORS más específica
 const corsOptions = {
-  origin: 'https://verduleria-web.vercel.app', // Permite solo peticiones desde tu frontend en Vercel
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+  origin: 'https://verduleria-jm33xaoha-joaquin-morales-projects.vercel.app', // <-- ¡URL CORRECTA!
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 app.use(cors(corsOptions));

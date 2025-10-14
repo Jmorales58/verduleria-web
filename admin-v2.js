@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingProductId = null;
 
     // URL CORRECTA Y FINAL (con 'j')
-    const BASE_API_URL = 'https://verduleria-backend-beuj.onrender.com/api';
+    const API_URL = 'https://verduleria-backend-beuj.onrender.com/api';
 
     async function fetchAndRenderProducts() {
         try {

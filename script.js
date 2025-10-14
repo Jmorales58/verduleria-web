@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let cart = [];
 
     // URL CORRECTA Y FINAL (con 'j')
-    const BASE_API_URL = 'https://verduleria-backend-beuj.onrender.com/api';
+    const API_URL = 'https://verduleria-backend-beuj.onrender.com/api';
 
     const productList = document.getElementById('product-list');
     const cartItemsContainer = document.getElementById('cart-items');

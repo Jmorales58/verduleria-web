@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const productForm = document.getElementById('product-form');
-    const productList = document.getElementById('existing-products-list');
+    // CORRECTO
+    const productList = document.getElementById('admin-product-list');
     const formTitle = document.getElementById('form-title');
     const submitButton = productForm.querySelector('button[type="submit"]');
     

@@ -9,7 +9,7 @@ const PORT = 3000;
 
 // Configuración de CORS más específica
 const corsOptions = {
-  origin: 'https://verduleria-jm33xaoha-joaquin-morales-projects.vercel.app', // <-- ¡URL CORRECTA!
+  origin: 'https://verduleria-rjm35aoha-joaquin-morales-projects-3e66175c.vercel.app/', // <-- ¡URL CORRECTA!
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };

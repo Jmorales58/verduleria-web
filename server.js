@@ -5,41 +5,22 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const app = express();
 
-// --- CONFIGURACIÓN DE CORS MEJORADA ---
-// Lista de orígenes permitidos
-const whitelist = [
-    'https://verduleria-rjm35aoha-joaquin-morales-projects-3e66175c.vercel.app', // Tu URL de producción
-    'http://localhost:5500', // Para pruebas locales
-    'http://127.0.0.1:5500'  // Para pruebas locales
-];
-
-const corsOptions = {
-    origin: function (origin, callback) {
-        // Permite peticiones sin origen (como Postman o apps móviles) y las de la whitelist
-        if (!origin || whitelist.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-};
-
-// Usamos la nueva configuración de CORS
-app.use(cors(corsOptions));
-// --- FIN DE LA CONFIGURACIÓN DE CORS ---
-
+// --- CONFIGURACIÓN DE CORS SIMPLE Y EFECTIVA ---
+// Esto permite peticiones desde cualquier origen. Es seguro para empezar.
+// Render maneja las peticiones OPTIONS automáticamente con esta configuración.
+app.use(cors());
+// --- FIN DE LA CONFIGURACIÓN ---
 
 app.use(express.json());
 
 // --- RUTAS PÚBLICAS ---
-// Obtener todos los productos (para la tienda)
+// Obtener todos los productos
 app.get('/api/products', async (req, res) => {
     try {
         const products = await prisma.product.findMany();
         res.json(products);
     } catch (error) {
+        console.error("Error en /api/products:", error);
         res.status(500).json({ error: 'Error al obtener los productos.' });
     }
 });
@@ -48,7 +29,6 @@ app.get('/api/products', async (req, res) => {
 app.post('/api/checkout', (req, res) => {
     const { cart } = req.body;
     console.log('Procesando pedido para:', cart);
-    // Aquí iría la lógica de pago con Stripe, etc.
     res.status(200).json({ message: '¡Pedido recibido! Gracias por tu compra.' });
 });
 
@@ -62,6 +42,7 @@ app.post('/api/admin/products', async (req, res) => {
         });
         res.status(201).json(product);
     } catch (error) {
+        console.error("Error en POST /api/admin/products:", error);
         res.status(500).json({ error: 'Error al crear el producto.' });
     }
 });
@@ -76,6 +57,7 @@ app.put('/api/admin/products/:id', async (req, res) => {
         });
         res.json(product);
     } catch (error) {
+        console.error("Error en PUT /api/admin/products:", error);
         res.status(500).json({ error: 'Error al actualizar el producto.' });
     }
 });
@@ -89,6 +71,7 @@ app.delete('/api/admin/products/:id', async (req, res) => {
         });
         res.status(204).send();
     } catch (error) {
+        console.error("Error en DELETE /api/admin/products:", error);
         res.status(500).json({ error: 'Error al eliminar el producto.' });
     }
 });

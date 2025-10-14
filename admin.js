@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función para obtener y mostrar todos los productos
     async function fetchAndRenderProducts() {
         try {
-            const response = await fetch(`${API_URL}/products`);
+            const response = await fetch('https://verduleria-backend-beug.onrender.com/api/products');
             const products = await response.json();
             
             productList.innerHTML = ''; // Limpiar la lista antes de renderizar

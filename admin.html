@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Mi Verdulería</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Panel de Administración</h1>
+
+        <!-- Formulario para Crear y Actualizar Productos -->
+        <div class="form-container">
+            <h2 id="form-title">Agregar Nuevo Producto</h2>
+            <form id="product-form">
+                <!-- Campo oculto para guardar el ID del producto que se está editando -->
+                <input type="hidden" id="product-id">
+
+                <div class="form-group">
+                    <label for="product-name">Nombre del Producto:</label>
+                    <input type="text" id="product-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-price">Precio:</label>
+                    <input type="number" id="product-price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-image">URL de la Imagen:</label>
+                    <input type="url" id="product-image" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" id="save-btn">Guardar Producto</button>
+                    <button type="button" id="cancel-edit-btn" style="display: none;">Cancelar Edición</button>
+                </div>
+            </form>
+        </div>
+
+        <hr>
+
+        <!-- Lista de Productos Existentes -->
+        <h2>Productos Existentes</h2>
+        <div id="admin-product-list">
+            <!-- Los productos se cargarán aquí desde JavaScript -->
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

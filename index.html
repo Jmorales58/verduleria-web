@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verdulería Fresca Online</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fa-solid fa-carrot"></i> Verdulería Fresca</h1>
+            <div class="cart-icon">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cart-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2>Nuestros Productos Frescos</h2>
+        <div id="product-list" class="product-grid">
+            <!-- Los productos se cargarán aquí con JavaScript -->
+        </div>
+
+        <section class="shopping-cart-section">
+            <h2><i class="fa-solid fa-cart-shopping"></i> Tu Carrito</h2>
+            <div id="cart-items">
+                <p>Tu carrito está vacío.</p>
+            </div>
+            <div class="cart-total">
+                <h3>Total: $<span id="cart-total-price">0.00</span></h3>
+            </div>
+            <button class="checkout-btn" disabled>Proceder al Pago</button>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Verdulería Fresca. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

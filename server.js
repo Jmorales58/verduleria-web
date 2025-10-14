@@ -7,7 +7,14 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = 3000;
 
-app.use(cors());
+// Configuración de CORS más específica
+const corsOptions = {
+  origin: 'https://verduleria-web.vercel.app', // Permite solo peticiones desde tu frontend en Vercel
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // --- ENDPOINTS PÚBLICOS (Para la tienda) ---

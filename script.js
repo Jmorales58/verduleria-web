@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let products = [];
     let cart = [];
 
+    // LA URL REAL Y CORRECTA ASIGNADA POR RENDER
+    const BASE_API_URL = 'https://verduleria-backend-beuj.onrender.com/api';
+
     const productList = document.getElementById('product-list');
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalPrice = document.getElementById('cart-total-price');
@@ -10,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchProducts() {
         try {
-            const response = await fetch('https://verduleria-backend.onrender.com/api/products');
+            const response = await fetch(`${BASE_API_URL}/products`);
             if (!response.ok) throw new Error('No se pudieron cargar los productos.');
             products = await response.json();
             renderProducts();
@@ -98,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkoutBtn.disabled = true;
 
         try {
-            const response = await fetch('https://verduleria-backend.onrender.com/api/checkout', {
+            const response = await fetch(`${BASE_API_URL}/checkout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

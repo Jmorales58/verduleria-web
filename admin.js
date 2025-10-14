@@ -1,136 +1,137 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Referencias a los elementos del DOM
     const productForm = document.getElementById('product-form');
-    const productList = document.getElementById('admin-product-list');
+    const productList = document.getElementById('existing-products-list');
     const formTitle = document.getElementById('form-title');
-    const productIdInput = document.getElementById('product-id');
-    const productNameInput = document.getElementById('product-name');
-    const productPriceInput = document.getElementById('product-price');
-    const productImageInput = document.getElementById('product-image');
-    const saveBtn = document.getElementById('save-btn');
-    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const submitButton = productForm.querySelector('button');
+    let editingProductId = null;
 
-    const API_URL = 'https://verduleria-backend-beug.onrender.com/api';
+    // URL CORRECTA Y ÚNICA PARA TODAS LAS PETICIONES DE ADMIN
+    const ADMIN_API_URL = 'https://verduleria-backend.onrender.com/api/admin/products';
+    // URL CORRECTA PARA LEER LOS PRODUCTOS
+    const PRODUCTS_API_URL = 'https://verduleria-backend.onrender.com/api/products';
 
-    // Función para obtener y mostrar todos los productos
+
     async function fetchAndRenderProducts() {
         try {
-            const response = await fetch('https://verduleria-backend-beug.onrender.com/api/products');
+            // Usamos la URL pública para leer productos
+            const response = await fetch(PRODUCTS_API_URL);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const products = await response.json();
             
-            productList.innerHTML = ''; // Limpiar la lista antes de renderizar
+            productList.innerHTML = '';
             products.forEach(product => {
-                const productItem = document.createElement('div');
-                productItem.className = 'product-item';
-                productItem.innerHTML = `
-                    <div class="product-item-info">
-                        <img src="${product.image}" alt="${product.name}">
-                        <div>
-                            <strong>${product.name}</strong>
-                            <p>$${product.price.toFixed(2)}</p>
-                        </div>
-                    </div>
-                    <div class="product-item-actions">
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${product.name} - $${product.price.toFixed(2)}</span>
+                    <div>
                         <button class="edit-btn" data-id="${product.id}">Editar</button>
                         <button class="delete-btn" data-id="${product.id}">Eliminar</button>
                     </div>
                 `;
-                productList.appendChild(productItem);
+                productList.appendChild(li);
             });
         } catch (error) {
             console.error('Error al cargar productos:', error);
+            productList.innerHTML = '<li>Error al cargar productos. Refresca la página.</li>';
         }
     }
 
-    // Función para manejar el envío del formulario (Crear o Actualizar)
     async function handleFormSubmit(e) {
         e.preventDefault();
-        const id = productIdInput.value;
-        const productData = {
-            name: productNameInput.value,
-            price: productPriceInput.value,
-            image: productImageInput.value,
+        const formData = new FormData(productForm);
+        const product = {
+            name: formData.get('name'),
+            price: parseFloat(formData.get('price')),
+            image: formData.get('image'),
         };
 
-        const isUpdating = id !== '';
-        const url = isUpdating ? `${API_URL}/admin/products/${id}` : `${API_URL}/admin/products`;
-        const method = isUpdating ? 'PUT' : 'POST';
-
         try {
-            const response = await fetch(url, {
+            let response;
+            let url = ADMIN_API_URL;
+            let method = 'POST';
+
+            if (editingProductId) {
+                url = `${ADMIN_API_URL}/${editingProductId}`;
+                method = 'PUT';
+            }
+
+            response = await fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(productData),
+                body: JSON.stringify(product),
             });
 
-            if (!response.ok) throw new Error('La respuesta del servidor no fue OK');
-            
+            if (!response.ok) {
+                throw new Error('La operación de guardado falló.');
+            }
+
             resetForm();
             await fetchAndRenderProducts();
 
         } catch (error) {
             console.error('Error al guardar producto:', error);
+            alert('No se pudo guardar el producto.');
         }
     }
 
-    // Función para preparar el formulario para editar un producto
-    function handleEditClick(e) {
-        if (!e.target.classList.contains('edit-btn')) return;
-        
-        const button = e.target;
-        const productItem = button.closest('.product-item');
-        const name = productItem.querySelector('strong').textContent;
-        const price = parseFloat(productItem.querySelector('p').textContent.replace('$', ''));
-        const image = productItem.querySelector('img').src;
-        const id = button.dataset.id;
+    function handleEdit(e) {
+        const button = e.target.closest('.edit-btn');
+        if (!button) return;
 
-        // Llenar el formulario con los datos del producto
+        editingProductId = button.dataset.id;
+        const productText = button.parentElement.previousElementSibling.textContent;
+        const [name, priceStr] = productText.split(' - $');
+        
+        productForm.name.value = name.trim();
+        productForm.price.value = parseFloat(priceStr);
+        productForm.image.value = ''; // Limpiamos la imagen por seguridad
+
         formTitle.textContent = 'Editar Producto';
-        productIdInput.value = id;
-        productNameInput.value = name;
-        productPriceInput.value = price;
-        productImageInput.value = image;
-        saveBtn.textContent = 'Actualizar Producto';
-        cancelEditBtn.style.display = 'inline-block';
-        window.scrollTo(0, 0); // Subir al inicio de la página para ver el formulario
+        submitButton.textContent = 'Actualizar Producto';
+        window.scrollTo(0, 0); // Sube al principio de la página para ver el formulario
     }
 
-    // Función para eliminar un producto
-    async function handleDeleteClick(e) {
-        if (!e.target.classList.contains('delete-btn')) return;
+    async function handleDelete(e) {
+        const button = e.target.closest('.delete-btn');
+        if (!button) return;
 
-        const id = e.target.dataset.id;
-        // Pedir confirmación antes de eliminar
-        if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
+        const productId = button.dataset.id;
+        if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+            return;
+        }
 
         try {
-            const response = await fetch(`${API_URL}/admin/products/${id}`, {
+            const response = await fetch(`${ADMIN_API_URL}/${productId}`, {
                 method: 'DELETE',
             });
-            if (!response.ok) throw new Error('La respuesta del servidor no fue OK');
-            
+
+            if (!response.ok) {
+                throw new Error('No se pudo eliminar el producto.');
+            }
+
             await fetchAndRenderProducts();
 
         } catch (error) {
-            console.error('Error al eliminar producto:', error);
+            console.error('Error al eliminar:', error);
+            alert('No se pudo eliminar el producto.');
         }
     }
-
-    // Función para resetear el formulario
+    
     function resetForm() {
         productForm.reset();
-        productIdInput.value = '';
+        editingProductId = null;
         formTitle.textContent = 'Agregar Nuevo Producto';
-        saveBtn.textContent = 'Guardar Producto';
-        cancelEditBtn.style.display = 'none';
+        submitButton.textContent = 'Guardar Producto';
     }
 
-    // --- EVENT LISTENERS ---
     productForm.addEventListener('submit', handleFormSubmit);
-    productList.addEventListener('click', handleEditClick);
-    productList.addEventListener('click', handleDeleteClick);
-    cancelEditBtn.addEventListener('click', resetForm);
+    productList.addEventListener('click', (e) => {
+        handleEdit(e);
+        handleDelete(e);
+    });
 
-    // Carga inicial de productos
+    // Iniciar todo
     fetchAndRenderProducts();
 });

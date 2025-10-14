@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let products = [];
     let cart = [];
 
-    // LA URL REAL Y CORRECTA ASIGNADA POR RENDER
+    // URL CORRECTA Y FINAL (con 'j')
     const BASE_API_URL = 'https://verduleria-backend-beuj.onrender.com/api';
 
     const productList = document.getElementById('product-list');
@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ... (el resto del código de script.js es el mismo, no es necesario copiarlo si solo cambias la URL)
+    
     function renderProducts() {
         if (!productList) return;
         productList.innerHTML = '';

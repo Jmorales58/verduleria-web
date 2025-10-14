@@ -5,18 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitButton = productForm.querySelector('button');
     let editingProductId = null;
 
-    // URL CORRECTA Y ÚNICA PARA TODAS LAS PETICIONES DE ADMIN
-    const ADMIN_API_URL = 'https://verduleria-backend.onrender.com/api/admin/products';
-    // URL CORRECTA PARA LEER LOS PRODUCTOS
-    const PRODUCTS_API_URL = 'https://verduleria-backend.onrender.com/api/products';
-
+    // LA URL REAL Y CORRECTA ASIGNADA POR RENDER
+    const BASE_API_URL = 'https://verduleria-backend-beuj.onrender.com/api';
 
     async function fetchAndRenderProducts() {
         try {
-            // Usamos la URL pública para leer productos
-            const response = await fetch(PRODUCTS_API_URL);
+            const response = await fetch(`${BASE_API_URL}/products`);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Error al cargar productos: ${response.statusText}`);
             }
             const products = await response.json();
             
@@ -33,8 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 productList.appendChild(li);
             });
         } catch (error) {
-            console.error('Error al cargar productos:', error);
-            productList.innerHTML = '<li>Error al cargar productos. Refresca la página.</li>';
+            console.error(error);
+            productList.innerHTML = '<li>No se pudieron cargar los productos. Intenta refrescar la página.</li>';
         }
     }
 
@@ -47,17 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
             image: formData.get('image'),
         };
 
+        let url = `${BASE_API_URL}/admin/products`;
+        let method = 'POST';
+
+        if (editingProductId) {
+            url = `${BASE_API_URL}/admin/products/${editingProductId}`;
+            method = 'PUT';
+        }
+
         try {
-            let response;
-            let url = ADMIN_API_URL;
-            let method = 'POST';
-
-            if (editingProductId) {
-                url = `${ADMIN_API_URL}/${editingProductId}`;
-                method = 'PUT';
-            }
-
-            response = await fetch(url, {
+            const response = await fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(product),
@@ -71,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await fetchAndRenderProducts();
 
         } catch (error) {
-            console.error('Error al guardar producto:', error);
+            console.error('Error al guardar:', error);
             alert('No se pudo guardar el producto.');
         }
     }
@@ -86,11 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         productForm.name.value = name.trim();
         productForm.price.value = parseFloat(priceStr);
-        productForm.image.value = ''; // Limpiamos la imagen por seguridad
+        productForm.image.value = '';
 
         formTitle.textContent = 'Editar Producto';
         submitButton.textContent = 'Actualizar Producto';
-        window.scrollTo(0, 0); // Sube al principio de la página para ver el formulario
+        window.scrollTo(0, 0);
     }
 
     async function handleDelete(e) {
@@ -98,19 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!button) return;
 
         const productId = button.dataset.id;
-        if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-            return;
-        }
+        if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
 
         try {
-            const response = await fetch(`${ADMIN_API_URL}/${productId}`, {
+            const response = await fetch(`${BASE_API_URL}/admin/products/${productId}`, {
                 method: 'DELETE',
             });
 
-            if (!response.ok) {
-                throw new Error('No se pudo eliminar el producto.');
-            }
-
+            if (!response.ok) throw new Error('No se pudo eliminar.');
             await fetchAndRenderProducts();
 
         } catch (error) {
@@ -132,6 +122,5 @@ document.addEventListener('DOMContentLoaded', () => {
         handleDelete(e);
     });
 
-    // Iniciar todo
     fetchAndRenderProducts();
 });

@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
     let products = [];
     let cart = [];
 
@@ -11,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchProducts() {
         try {
-            const response = await fetch('https://verduleria-backend-beug.onrender.com/api/products');
+            const response = await fetch('https://verduleria-backend.onrender.com/api/products');
             if (!response.ok) throw new Error('No se pudieron cargar los productos.');
             products = await response.json();
             renderProducts();
@@ -42,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderCart() {
+        if (!cartItemsContainer) return;
         cartItemsContainer.innerHTML = '';
         if (cart.length === 0) {
             cartItemsContainer.innerHTML = '<p>Tu carrito está vacío.</p>';
@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateCartInfo() {
+        if (!cartCount || !cartTotalPrice || !checkoutBtn) return;
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         cartCount.textContent = totalItems;
@@ -75,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addToCart(productId) {
         const product = products.find(p => p.id === productId);
+        if (!product) return;
         const existingItem = cart.find(item => item.id === productId);
         if (existingItem) {
             existingItem.quantity++;
@@ -89,16 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCart();
     }
 
-    // --- NUEVA FUNCIÓN PARA MANEJAR EL CHECKOUT ---
     async function handleCheckout() {
         if (cart.length === 0) return;
 
-        // Cambiamos el texto del botón para dar feedback al usuario
         checkoutBtn.textContent = 'Procesando...';
         checkoutBtn.disabled = true;
 
         try {
-            const response = await fetch('https://verduleria-backend-beug.onrender.com/api/checkout', {
+            const response = await fetch('https://verduleria-backend.onrender.com/api/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,9 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const result = await response.json();
-            alert(result.message); // Mostramos un mensaje de éxito
+            alert(result.message);
 
-            // Vaciamos el carrito y actualizamos la interfaz
             cart = [];
             renderCart();
 
@@ -121,30 +120,33 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error en el checkout:', error);
             alert('No se pudo completar el pedido. Inténtalo de nuevo.');
         } finally {
-            // Devolvemos el botón a su estado original
             checkoutBtn.textContent = 'Proceder al Pago';
-            // La función updateCartInfo se encargará de deshabilitarlo si el carrito está vacío
             updateCartInfo();
         }
     }
     
-    // --- MANEJADORES DE EVENTOS ---
-    productList.addEventListener('click', (e) => {
-        if (e.target.classList.contains('add-to-cart-btn')) {
-            addToCart(parseInt(e.target.getAttribute('data-id')));
-        }
-    });
+    if (productList) {
+        productList.addEventListener('click', (e) => {
+            const button = e.target.closest('.add-to-cart-btn');
+            if (button) {
+                addToCart(parseInt(button.getAttribute('data-id')));
+            }
+        });
+    }
 
-    cartItemsContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-from-cart-btn')) {
-            removeFromCart(parseInt(e.target.getAttribute('data-id')));
-        }
-    });
+    if (cartItemsContainer) {
+        cartItemsContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('.remove-from-cart-btn');
+            if (button) {
+                removeFromCart(parseInt(button.getAttribute('data-id')));
+            }
+        });
+    }
 
-    // ¡NUEVO EVENT LISTENER PARA EL BOTÓN DE PAGO!
-    checkoutBtn.addEventListener('click', handleCheckout);
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', handleCheckout);
+    }
 
-    // --- INICIALIZACIÓN ---
     fetchProducts();
     renderCart();
 });

@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let products = [];
     let cart = [];
 
-    // URL CORRECTA Y FINAL (con 'j')
+    // URL correcta y final de tu API
     const API_URL = 'https://verduleria-backend-beuj.onrender.com/api';
 
     const productList = document.getElementById('product-list');
@@ -13,18 +13,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchProducts() {
         try {
-            const response = await fetch(`${BASE_API_URL}/products`);
-            if (!response.ok) throw new Error('No se pudieron cargar los productos.');
+            const response = await fetch(`${API_URL}/products`);
+            if (!response.ok) {
+                throw new Error('No se pudieron cargar los productos.');
+            }
             products = await response.json();
             renderProducts();
         } catch (error) {
             console.error('Error fetching products:', error);
-            productList.innerHTML = '<p>Lo sentimos, no se pueden mostrar los productos en este momento.</p>';
+            if (productList) {
+                productList.innerHTML = '<p>Lo sentimos, no se pueden mostrar los productos en este momento.</p>';
+            }
         }
     }
 
-    // ... (el resto del código de script.js es el mismo, no es necesario copiarlo si solo cambias la URL)
-    
     function renderProducts() {
         if (!productList) return;
         productList.innerHTML = '';
@@ -32,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const productCard = document.createElement('div');
             productCard.className = 'product-card';
             productCard.innerHTML = `
-                <img src="${product.image}" alt="${product.name}">
+                <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/150'; this.onerror=null;">
                 <div class="product-info">
                     <h3>${product.name}</h3>
                     <p class="product-price">$${product.price.toFixed(2)}</p>
@@ -56,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cartItem.className = 'cart-item';
                 cartItem.innerHTML = `
                     <div class="cart-item-info">
-                        <img src="${item.image}" alt="${item.name}">
+                        <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/50'; this.onerror=null;">
                         <div>
                             <strong>${item.name}</strong>
                             <p>$${item.price.toFixed(2)} x ${item.quantity}</p>
@@ -98,29 +100,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleCheckout() {
         if (cart.length === 0) return;
-
         checkoutBtn.textContent = 'Procesando...';
         checkoutBtn.disabled = true;
 
         try {
-            const response = await fetch(`${BASE_API_URL}/checkout`, {
+            const response = await fetch(`${API_URL}/checkout`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ cart: cart }),
             });
-
-            if (!response.ok) {
-                throw new Error('Hubo un problema al procesar el pedido.');
-            }
-
+            if (!response.ok) throw new Error('Hubo un problema al procesar el pedido.');
+            
             const result = await response.json();
             alert(result.message);
-
             cart = [];
             renderCart();
-
         } catch (error) {
             console.error('Error en el checkout:', error);
             alert('No se pudo completar el pedido. Inténtalo de nuevo.');
@@ -130,20 +124,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // --- EVENT LISTENERS ---
     if (productList) {
         productList.addEventListener('click', (e) => {
-            const button = e.target.closest('.add-to-cart-btn');
-            if (button) {
-                addToCart(parseInt(button.getAttribute('data-id')));
+            if (e.target.closest('.add-to-cart-btn')) {
+                addToCart(parseInt(e.target.closest('.add-to-cart-btn').dataset.id));
             }
         });
     }
 
     if (cartItemsContainer) {
         cartItemsContainer.addEventListener('click', (e) => {
-            const button = e.target.closest('.remove-from-cart-btn');
-            if (button) {
-                removeFromCart(parseInt(button.getAttribute('data-id')));
+            if (e.target.closest('.remove-from-cart-btn')) {
+                removeFromCart(parseInt(e.target.closest('.remove-from-cart-btn').dataset.id));
             }
         });
     }
@@ -152,6 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
         checkoutBtn.addEventListener('click', handleCheckout);
     }
 
-    fetchProducts();
-    renderCart();
+    // Carga inicial
+    if (document.getElementById('product-list')) {
+        fetchProducts();
+    }
+    if (document.getElementById('cart-items')) {
+        renderCart();
+    }
 });

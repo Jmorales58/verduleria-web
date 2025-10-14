@@ -1,108 +1,101 @@
-// --- CONFIGURACIÓN DEL SERVIDOR ---
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 
-const app = express();
 const prisma = new PrismaClient();
-const PORT = process.env.PORT || 3000;
+const app = express();
 
-// Configuración de CORS más específica
+// --- CONFIGURACIÓN DE CORS MEJORADA ---
+// Lista de orígenes permitidos
+const whitelist = [
+    'https://verduleria-rjm35aoha-joaquin-morales-projects-3e66175c.vercel.app', // Tu URL de producción
+    'http://localhost:5500', // Para pruebas locales
+    'http://127.0.0.1:5500'  // Para pruebas locales
+];
+
 const corsOptions = {
-  origin: 'https://verduleria-rjm35aoha-joaquin-morales-projects-3e66175c.vercel.app/', // <-- ¡URL CORRECTA!
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: function (origin, callback) {
+        // Permite peticiones sin origen (como Postman o apps móviles) y las de la whitelist
+        if (!origin || whitelist.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
+// Usamos la nueva configuración de CORS
 app.use(cors(corsOptions));
+// --- FIN DE LA CONFIGURACIÓN DE CORS ---
+
+
 app.use(express.json());
 
-// --- ENDPOINTS PÚBLICOS (Para la tienda) ---
-
+// --- RUTAS PÚBLICAS ---
+// Obtener todos los productos (para la tienda)
 app.get('/api/products', async (req, res) => {
     try {
-        const products = await prisma.product.findMany({ orderBy: { id: 'asc' } });
+        const products = await prisma.product.findMany();
         res.json(products);
     } catch (error) {
-        console.error("Error al obtener productos:", error);
-        res.status(500).json({ message: "Error del servidor." });
+        res.status(500).json({ error: 'Error al obtener los productos.' });
     }
 });
 
-app.post('/api/checkout', async (req, res) => {
-    // ... (este endpoint no cambia)
+// Procesar el pago (simulado)
+app.post('/api/checkout', (req, res) => {
     const { cart } = req.body;
-    if (!cart || cart.length === 0) {
-        return res.status(400).json({ message: 'El carrito está vacío.' });
-    }
-    console.log('--- NUEVO PEDIDO RECIBIDO ---');
-    let totalCalculado = 0;
-    cart.forEach(item => {
-        console.log(`- ${item.quantity} x ${item.name} (@ $${item.price.toFixed(2)} c/u)`);
-        totalCalculado += item.quantity * item.price;
-    });
-    console.log(`TOTAL DEL PEDIDO: $${totalCalculado.toFixed(2)}`);
-    console.log('----------------------------\n');
-    res.status(200).json({ message: '¡Pedido recibido con éxito!' });
+    console.log('Procesando pedido para:', cart);
+    // Aquí iría la lógica de pago con Stripe, etc.
+    res.status(200).json({ message: '¡Pedido recibido! Gracias por tu compra.' });
 });
 
 
-// --- ENDPOINTS DE ADMINISTRACIÓN (Para el panel de control) ---
-
-// <-- NUEVO: Crear un producto
+// --- RUTAS DE ADMINISTRACIÓN ---
+// Crear un nuevo producto
 app.post('/api/admin/products', async (req, res) => {
     try {
-        const { name, price, image } = req.body;
-        const newProduct = await prisma.product.create({
-            data: {
-                name,
-                price: parseFloat(price), // Convertimos el precio a número
-                image,
-            },
+        const product = await prisma.product.create({
+            data: req.body,
         });
-        res.status(201).json(newProduct);
+        res.status(201).json(product);
     } catch (error) {
-        console.error("Error al crear producto:", error);
-        res.status(500).json({ message: "Error del servidor al crear producto." });
+        res.status(500).json({ error: 'Error al crear el producto.' });
     }
 });
 
-// <-- NUEVO: Actualizar un producto
+// Actualizar un producto
 app.put('/api/admin/products/:id', async (req, res) => {
+    const { id } = req.params;
     try {
-        const { id } = req.params;
-        const { name, price, image } = req.body;
-        const updatedProduct = await prisma.product.update({
+        const product = await prisma.product.update({
             where: { id: parseInt(id) },
-            data: {
-                name,
-                price: parseFloat(price),
-                image,
-            },
+            data: req.body,
         });
-        res.status(200).json(updatedProduct);
+        res.json(product);
     } catch (error) {
-        console.error("Error al actualizar producto:", error);
-        res.status(500).json({ message: "Error del servidor al actualizar." });
+        res.status(500).json({ error: 'Error al actualizar el producto.' });
     }
 });
 
-// <-- NUEVO: Eliminar un producto
+// Eliminar un producto
 app.delete('/api/admin/products/:id', async (req, res) => {
+    const { id } = req.params;
     try {
-        const { id } = req.params;
         await prisma.product.delete({
             where: { id: parseInt(id) },
         });
-        res.status(204).send(); // 204 significa "OK, pero sin contenido que devolver"
+        res.status(204).send();
     } catch (error) {
-        console.error("Error al eliminar producto:", error);
-        res.status(500).json({ message: "Error del servidor al eliminar." });
+        res.status(500).json({ error: 'Error al eliminar el producto.' });
     }
 });
 
 
-// --- INICIAR EL SERVIDOR ---
+// --- INICIO DEL SERVIDOR ---
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor de la verdulería corriendo en http://localhost:${PORT}`);
+    console.log(`Servidor de la verdulería corriendo en el puerto ${PORT}`);
 });

@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchProducts() {
         try {
-            const response = await fetch('http://localhost:3000/api/products');
+            const response = await fetch('https://verduleria-backend-beug.onrender.com/api/products');
             if (!response.ok) throw new Error('No se pudieron cargar los productos.');
             products = await response.json();
             renderProducts();
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkoutBtn.disabled = true;
 
         try {
-            const response = await fetch('http://localhost:3000/api/checkout', {
+            const response = await fetch('https://verduleria-backend-beug.onrender.com/api/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

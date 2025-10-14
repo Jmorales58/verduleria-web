@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('save-btn');
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
 
-    const API_URL = 'http://localhost:3000/api';
+    const API_URL = 'https://verduleria-backend-beug.onrender.com/api';
 
     // Función para obtener y mostrar todos los productos
     async function fetchAndRenderProducts() {

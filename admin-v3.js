@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Selectores de elementos del DOM
     const productForm = document.getElementById('product-form');
-    // CORRECTO
-    const productList = document.getElementById('admin-product-list');
+    // FIX #1: Usar el ID correcto del HTML ('admin-product-list')
+    const productList = document.getElementById('admin-product-list'); 
     const formTitle = document.getElementById('form-title');
-    const submitButton = productForm.querySelector('button[type="submit"]');
+    const submitButton = document.getElementById('save-btn');
     
     // URL correcta y final de tu API
     const API_URL = 'https://verduleria-backend-beuj.onrender.com/api';
@@ -12,6 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Función para obtener y mostrar todos los productos
     async function fetchAndRenderProducts() {
+        // Asegurarse de que productList no sea null antes de hacer nada
+        if (!productList) {
+            console.error("Elemento 'admin-product-list' no encontrado en el HTML.");
+            return;
+        }
         try {
             const response = await fetch(`${API_URL}/products`);
             if (!response.ok) {
@@ -19,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const products = await response.json();
             
-            productList.innerHTML = ''; // Limpiar la lista antes de renderizar
+            productList.innerHTML = '';
             products.forEach(product => {
                 const li = document.createElement('li');
                 li.innerHTML = `
@@ -37,13 +43,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Función para manejar el envío del formulario (crear o actualizar)
+    // Función para manejar el envío del formulario
     async function handleFormSubmit(e) {
         e.preventDefault();
+        
+        // FIX #2: Obtener valores usando el ID de cada input
         const productData = {
-            name: productForm.name.value,
-            price: parseFloat(productForm.price.value),
-            image: productForm.image.value,
+            name: document.getElementById('product-name').value,
+            price: parseFloat(document.getElementById('product-price').value),
+            image: document.getElementById('product-image').value,
         };
 
         let url = `${API_URL}/admin/products`;
@@ -61,12 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(productData),
             });
 
-            if (!response.ok) {
-                throw new Error('La operación en el servidor falló.');
-            }
-
+            if (!response.ok) throw new Error('La operación en el servidor falló.');
             resetForm();
-            await fetchAndRenderProducts(); // Recargar la lista
+            await fetchAndRenderProducts();
         } catch (error) {
             console.error('Error al guardar producto:', error);
             alert('No se pudo guardar el producto. Revisa la consola.');
@@ -78,38 +83,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const productElement = document.querySelector(`.edit-btn[data-id='${productId}']`).closest('li');
         const [name, priceStr] = productElement.querySelector('span').textContent.split(' - $');
         
-        productForm.name.value = name.trim();
-        productForm.price.value = parseFloat(priceStr);
-        productForm.image.value = ''; // La imagen no se puede "leer" de vuelta, se deja en blanco
+        document.getElementById('product-name').value = name.trim();
+        document.getElementById('product-price').value = parseFloat(priceStr);
+        document.getElementById('product-image').value = '';
 
         editingProductId = productId;
         formTitle.textContent = 'Editar Producto';
         submitButton.textContent = 'Actualizar Producto';
-        window.scrollTo(0, 0); // Subir al inicio de la página para ver el formulario
+        window.scrollTo(0, 0);
     }
 
     // Función para eliminar un producto
     async function handleDelete(productId) {
-        if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-            return;
-        }
-
+        if (!confirm('¿Estás seguro?')) return;
         try {
-            const response = await fetch(`${API_URL}/admin/products/${productId}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('No se pudo eliminar el producto en el servidor.');
-            }
-            await fetchAndRenderProducts(); // Recargar la lista
+            await fetch(`${API_URL}/admin/products/${productId}`, { method: 'DELETE' });
+            await fetchAndRenderProducts();
         } catch (error) {
             console.error('Error al eliminar:', error);
             alert('No se pudo eliminar el producto.');
         }
     }
     
-    // Función para resetear el formulario a su estado inicial
+    // Función para resetear el formulario
     function resetForm() {
         productForm.reset();
         editingProductId = null;
@@ -118,17 +114,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- EVENT LISTENERS ---
-    productForm.addEventListener('submit', handleFormSubmit);
+    // Solo agregar listeners si los elementos existen
+    if (productForm) {
+        productForm.addEventListener('submit', handleFormSubmit);
+    }
 
-    // Usar delegación de eventos para los botones de la lista
-    productList.addEventListener('click', (e) => {
-        if (e.target.matches('.edit-btn')) {
-            handleEdit(e.target.dataset.id);
-        }
-        if (e.target.matches('.delete-btn')) {
-            handleDelete(e.target.dataset.id);
-        }
-    });
+    if (productList) {
+        productList.addEventListener('click', (e) => {
+            if (e.target.matches('.edit-btn')) handleEdit(e.target.dataset.id);
+            if (e.target.matches('.delete-btn')) handleDelete(e.target.dataset.id);
+        });
+    }
 
     // Carga inicial de productos
     fetchAndRenderProducts();

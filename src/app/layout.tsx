@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { siteConfig } from '@/lib/site';
@@ -49,6 +50,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         />
         {children}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
